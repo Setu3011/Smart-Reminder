@@ -1,47 +1,113 @@
+/* Global Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(to right, #ece9e6, #ffffff);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: lightgrey; /* Black background */
+  color: #e6edf3;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  margin: 0;
+  padding: 20px;
 }
 
+/* Dark Violet Container */
 .container {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  background: #4b0082; /* Dark violet */
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(75, 0, 130, 0.5);
+  width: 100%;
+  max-width: 500px;
   text-align: center;
-  width: 100%;
-  max-width: 400px;
+  transition: transform 0.3s ease;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.container:hover {
+  transform: translateY(-3px);
 }
 
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+/* Black Inputs & Textarea */
+input,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 12px 0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background-color: #0d1117; /* Black input */
+  color: #e6edf3;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #888;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #2ea043;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Green Button */
 button {
   width: 100%;
-  padding: 12px;
-  background-color: #007BFF;
-  color: white;
+  padding: 14px;
+  background-color: #2ea043;
+  color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+button:hover {
+  background-color: #22863a;
+  transform: scale(1.02);
 }
 
 button.clicked {
-  background-color: #28a745;
+  background-color: #1f883d !important;
 }
 
 #response {
   margin-top: 15px;
-  color: green;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  button {
+    font-size: 0.95rem;
+  }
 }
