@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKER_HUB_REPO = 'your-dockerhub-username/smart-reminder'
+  }
+
+  stages {
+    stage('Clone Repository') {
+      steps {
+        git 'https://github.com/yourusername/smart-reminder.git'
+      }
+    }
+
+    stage('Install Backend Dependencies') {
+      steps {
+        dir('backend') {
+          sh 'npm install'
+        }
+      }
+    }
+
+    stage('Build and Push Docker Images') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+          sh 'docker-compose build'
+          sh 'docker-compose push'
+        }
+      }
+    }
+
+    stage('Deploy to EC2') {
+      steps {
+        sshagent(['ec2-ssh-key']) {
+          sh 'ssh -o StrictHostKeyChecking=no ec2-user@<EC2-IP> "cd smart-reminder && docker-compose down && git pull && docker-compose up -d --build"'
+        }
+      }
+    }
+  }
+}
