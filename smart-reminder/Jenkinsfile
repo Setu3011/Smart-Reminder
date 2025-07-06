@@ -2,13 +2,13 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_HUB_REPO = 'your-dockerhub-username/smart-reminder'
+    DOCKER_HUB_REPO = 'setu3011/smart-reminder'
   }
 
   stages {
     stage('Clone Repository') {
       steps {
-        git 'https://github.com/yourusername/smart-reminder.git'
+        git 'https://github.com/Setu3011/smart-reminder.git'
       }
     }
 
@@ -33,7 +33,15 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(['ec2-ssh-key']) {
-          sh 'ssh -o StrictHostKeyChecking=no ec2-user@<EC2-IP> "cd smart-reminder && docker-compose down && git pull && docker-compose up -d --build"'
+          sh '''
+            ssh -o StrictHostKeyChecking=no ec2-user@<EC2-IP> '
+              cd smart-reminder || git clone https://github.com/Setu3011/smart-reminder.git;
+              cd smart-reminder &&
+              git pull &&
+              docker-compose down &&
+              docker-compose up -d --build
+            '
+          '''
         }
       }
     }
