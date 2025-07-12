@@ -8,7 +8,7 @@ pipeline {
     GIT_REPO   = 'https://github.com/Setu3011/Smart-Reminder.git'
     GIT_BRANCH = 'main'
 
-    EC2_HOST   = '13.61.10.107'   /* Ubuntu EC2 public IP */
+    EC2_HOST   = '13.60.188.243'   /* Ubuntu EC2 public IP */
     REMOTE_DIR = 'smart-reminder' /* folder name on EC2 */
   }
 
