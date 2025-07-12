@@ -23,24 +23,28 @@ pipeline {
     stage('Build and Push Docker Images') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-          sh 'docker-compose build'
-          sh 'docker-compose push'
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker compose build
+            docker compose push
+          '''
         }
       }
     }
 
     stage('Deploy to EC2') {
       steps {
-        sshagent(['ec2-ssh-key']) {
+        sshagent(credentials: ['ec2-ssh-key']) {
           sh '''
-            ssh -o StrictHostKeyChecking=no ec2-user@<EC2-IP> '
-              cd smart-reminder || git clone https://github.com/Setu3011/smart-reminder.git;
-              cd smart-reminder &&
-              git pull &&
-              docker-compose down &&
-              docker-compose up -d --build
-            '
+            ssh -o StrictHostKeyChecking=no ubuntu@<EC2-IP> << 'ENDSSH'
+              if [ ! -d smart-reminder ]; then
+                git clone https://github.com/Setu3011/smart-reminder.git
+              fi
+              cd smart-reminder
+              git pull
+              docker compose down
+              docker compose up -d --build
+            ENDSSH
           '''
         }
       }
