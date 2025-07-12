@@ -1,30 +1,27 @@
 version: "3.8"
+
 services:
-  mongo:
-    image: mongo
-    container_name: mongo
+  frontend:
+    image: setu3011/smart-reminder-frontend
+    build: ./frontend
     ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+      - "3000:80"
 
   backend:
+    image: setu3011/smart-reminder-backend
     build: ./backend
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/smartreminder
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
-    depends_on:
-      - mongo
 
-  frontend:
-    build: ./frontend
+  mongo:
+    image: mongo:6.0.13
     ports:
-      - "80:80"
-    depends_on:
-      - backend
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
 volumes:
   mongo-data:
