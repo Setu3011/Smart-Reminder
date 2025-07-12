@@ -1,23 +1,20 @@
 pipeline {
   agent any
 
-  /* ---------- Global variables you might tweak ---------- */
+  /* ----- Global vars you might tweak ----- */
   environment {
-    /* Your Docker Hub image namespace */
     DOCKER_HUB_REPO = 'setu3011/smart-reminder'
 
-    /* Git repo & branch (exact‑case!) */
     GIT_REPO   = 'https://github.com/Setu3011/Smart-Reminder.git'
     GIT_BRANCH = 'main'
 
-    /* EC2 host you deploy to */
-    EC2_HOST   = '13.61.10.107'     // <‑‑ change if needed
-    REMOTE_DIR = 'smart-reminder'   // folder on EC2
+    EC2_HOST   = '13.61.10.107'   /* Ubuntu EC2 public IP */
+    REMOTE_DIR = 'smart-reminder' /* folder name on EC2 */
   }
 
   stages {
 
-    /* 1️⃣  Checkout the exact repo / branch */
+    /* 1️⃣  Checkout source */
     stage('Clone Repository') {
       steps {
         git branch: "${GIT_BRANCH}",
@@ -25,16 +22,16 @@ pipeline {
       }
     }
 
-    /* 2️⃣  Install backend dependencies so the unit tests (if any) can run */
+    /* 2️⃣  Install backend deps (package.json lives in backend/) */
     stage('Install Backend Dependencies') {
       steps {
         dir('backend') {
-          sh 'npm install --production'
+          sh 'npm install --omit=dev'
         }
       }
     }
 
-    /* 3️⃣  Build & push Docker images to Docker Hub */
+    /* 3️⃣  Build & push images to Docker Hub */
     stage('Build and Push Docker Images') {
       steps {
         withCredentials([usernamePassword(
@@ -43,6 +40,7 @@ pipeline {
             passwordVariable: 'DOCKER_PASS'
         )]) {
           sh '''
+            set -e
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
             docker compose build
             docker compose push
@@ -51,17 +49,19 @@ pipeline {
       }
     }
 
-    /* 4️⃣  SSH into EC2 and run docker‑compose up */
+    /* 4️⃣  SSH to EC2 → pull latest code & run docker compose */
     stage('Deploy to EC2') {
       steps {
         sshagent(credentials: ['ec2-ssh-key']) {
-          sh '''
+          sh """
             ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} << 'ENDSSH'
               set -e
-              # clone once if the folder doesn’t exist
+
+              # clone once if missing
               if [ ! -d "${REMOTE_DIR}" ]; then
-                git clone https://github.com/Setu3011/Smart-Reminder.git "${REMOTE_DIR}"
+                git clone ${GIT_REPO} "${REMOTE_DIR}"
               fi
+
               cd "${REMOTE_DIR}"
               git pull origin ${GIT_BRANCH}
 
@@ -69,18 +69,9 @@ pipeline {
               docker compose pull
               docker compose up -d --build --remove-orphans
             ENDSSH
-          '''
+          """
         }
       }
-    }
-  }
-
-  /* Optional: e‑mail on failure (remove if you don’t need) */
-  post {
-    failure {
-      mail to: 'your_email@example.com',
-           subject: "❌ Build failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-           body:    "See details: ${env.BUILD_URL}"
     }
   }
 }
