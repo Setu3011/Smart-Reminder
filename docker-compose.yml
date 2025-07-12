@@ -3,13 +3,11 @@ version: "3.8"
 services:
   frontend:
     image: setu3011/smart-reminder-frontend
-    build: ./frontend
     ports:
       - "3000:80"
 
   backend:
     image: setu3011/smart-reminder-backend
-    build: ./backend
     ports:
       - "5000:5000"
     environment:
