@@ -32,7 +32,7 @@ pipeline {
     }
 
     /* 3️⃣  Build & push images to Docker Hub */
-    stage('Build and Push Docker Images') {
+  /*  stage('Build and Push Docker Images') {
       steps {
         withCredentials([usernamePassword(
             credentialsId: 'dockerhub-creds',
@@ -47,8 +47,39 @@ pipeline {
           '''
         }
       }
-    }
+    } */
+/* 3️⃣ Build & push images to Docker Hub */
+stage('Build and Push Docker Images') {
+  steps {
+    withCredentials([
+      usernamePassword(
+        credentialsId: 'dockerhub-creds',   // <- make sure this ID exists
+        usernameVariable: 'DOCKER_USER',
+        passwordVariable: 'DOCKER_PASS'
+      )
+    ]) {
 
+      sh """
+        set -e
+
+        # 1. Log in to Docker Hub (token recommended if you use 2FA)
+        echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
+
+        # 2. Build everything (frontend, backend, etc.)
+        docker compose build
+
+        # 3. Push every service image defined in docker‑compose.yml
+        docker compose push
+
+        # 4. (optional) log out to avoid leaving creds behind
+        docker logout
+      """
+    }
+  }
+}
+
+
+    
     /* 4️⃣  SSH to EC2 → pull latest code & run docker compose */
     stage('Deploy to EC2') {
       steps {
