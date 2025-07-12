@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Clone Repository') {
       steps {
-        git 'https://github.com/Setu3011/smart-reminder.git'
+        git 'https://github.com/Setu3011/Smart-reminder.git'
       }
     }
 
@@ -38,7 +38,7 @@ pipeline {
           sh '''
             ssh -o StrictHostKeyChecking=no ubuntu@13.61.10.107 
               if [ ! -d smart-reminder ]; then
-                git clone https://github.com/Setu3011/smart-reminder.git
+                git clone https://github.com/Setu3011/Smart-reminder.git
               fi
               cd smart-reminder
               git pull
