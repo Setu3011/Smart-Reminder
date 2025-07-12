@@ -1,0 +1,53 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKER_HUB_REPO = 'setu3011/smart-reminder'
+  }
+
+  stages {
+    stage('Clone Repository') {
+      steps {
+        git 'https://github.com/Setu3011/smart-reminder.git'
+      }
+    }
+
+    stage('Install Backend Dependencies') {
+      steps {
+        dir('backend') {
+          sh 'npm install'
+        }
+      }
+    }
+
+    stage('Build and Push Docker Images') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker compose build
+            docker compose push
+          '''
+        }
+      }
+    }
+
+    stage('Deploy to EC2') {
+      steps {
+        sshagent(credentials: ['ec2-ssh-key']) {
+          sh '''
+            ssh -o StrictHostKeyChecking=no ubuntu@13.61.10.107 
+              if [ ! -d smart-reminder ]; then
+                git clone https://github.com/Setu3011/smart-reminder.git
+              fi
+              cd smart-reminder
+              git pull
+              docker compose down
+              docker compose up -d --build
+            ENDSSH
+          '''
+        }
+      }
+    }
+  }
+}
